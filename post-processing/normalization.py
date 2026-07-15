@@ -1,18 +1,13 @@
 import json
-import copy
-import time
 import math
 import functools
 import signal
 import re
-from pathlib import Path
-from collections import Counter
-import pubchempy as pcp
 from tqdm import tqdm
 
 # --- CONFIGURATION ---
-INPUT_FILE = "cleaned_raw_data_fullds.jsonl"
-OUTPUT_FILE = "sol_gel_dataset_06_11_26_v2.jsonl"
+INPUT_FILE = "cleaned_raw_dataset.jsonl"
+OUTPUT_FILE = "sol_gel_dataset.jsonl"
 CMT_MANUAL_FILE = "cmt_manual.json"
 ATMO_MANUAL_FILE = "atmosphere_manual.json"
 REAGENT_MAPPING_FILE = "reagent_mapping.json"
@@ -125,21 +120,18 @@ def parse_numeric_range(raw_str):
     unit_match = re.search(r'\d\s*([a-zA-Z°%]+)', clean_s)
     unit = unit_match.group(1) if unit_match else ""
     if unit:
-        unit_map = {"hour": "h", "hours": "h", "hr": "h", "hrs": "h", "sec": "s", "second": "s", "minute": "min", "minutes": "min"}
+        unit_map = {"hour": "h", "hours": "h", "hr": "h", "hrs": "h", "sec": "s", "second": "s", "minute": "min", "minutes": "min",
+                    "°c": "°C", "°f": "°F", "k": "K"}
         unit = unit_map.get(unit, unit)
     min_val, max_val = min(nums), max(nums)
     return {"raw_string": raw_str, "unit": unit, "max_value": max_val, "min_value": min_val}
 
 def clean_reagent_name(name):
-    # Must match how reagent_mapping.json was keyed (post_process build_reagent_mapping:
-    # name.lower().strip(), hyphens/dots preserved). Previously this also did
-    # .replace('·',' ').replace('-',' '), which made every hyphenated reagent
-    # (2-methoxyethanol, n,n-dimethylformamide, 1-butanol, ...) miss the map.
     n = name.lower().strip()
-    # Greedily catch all water variants
+    # Greedily catch all water variants ("deionized water, distilled water, DI water, etc.")
     if "water" in n:
         return "water"
-    overrides = {"triethanol amine": "triethanolamine", "absolute ethanol": "ethanol"}
+    overrides = {"triethanol amine": "triethanolamine", "absolute ethanol": "ethanol"} # add variants that pubchempy (reagent_mappings.json) fails to capture
     return overrides.get(n, n)
 
 HYDRATE_SEP_RE = re.compile(r'[.\*•×∙⋅]\s*(?=\d*H2O)')
@@ -173,13 +165,12 @@ def predict_oxidation_states(formula):
     Returns {element: [ox_state_int, ...]} using pymatgen's best guess.
     Fractional guesses (e.g. Fe in Fe3O4 -> 2.667) collapse to [floor, ceil].
 
-    Memoized — same precursor formulas recur across many recipes, so
+    Memorized — same precursor formulas recur across many recipes, so
     pymatgen only runs once per distinct formula (and once per distinct
     failure too, since failures return {} rather than raising).
 
     Hydrates: predicts on the anhydrous part only (text before '·'), since
-    pymatgen.Composition cannot parse the middle-dot separator and the
-    redox-active part of a hydrate precursor is the salt, not the water.
+    pymatgen.Composition cannot parse the middle-dot separator.
 
     Doped / fractional-stoichiometry formulas (e.g. La0.7Sr0.3MnO3) are
     attempted too — the wall-clock timeout below guards against the slow
@@ -330,7 +321,7 @@ def run_normalization():
                 
                 re_obj = {
                     "reagent_string": r['name'],
-                    "role": r['role'],
+                    "reagent_role": r['role'],
                     "pubchem_CID": None,   # numeric -> null when unresolved
                     "iupac_name": "",
                     "reagent_formula": "",
@@ -390,7 +381,7 @@ def run_normalization():
 
             # --- Assemble restructured output ---
             output = {
-                "recipe": {
+                "protocol": {
                     "doi": recipe["doi"],
                     "target": recipe["target"],
                     "metal_precursors": recipe["metal_precursors"],

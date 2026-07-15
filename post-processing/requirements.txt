@@ -1,0 +1,5 @@
+pydantic
+tqdm
+text2chem
+regex
+pymatgen

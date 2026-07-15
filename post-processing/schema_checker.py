@@ -1,14 +1,13 @@
 import json
 from typing import List, Literal, Annotated
-from pathlib import Path
 from collections import Counter
 from pydantic import BaseModel, Field, ValidationError, ConfigDict
 from tqdm import tqdm
 
 # --- CONFIGURATION ---
-INPUT_FILE = "v7a_geminiFlash3_extract_output.jsonl" # full_dataset_geminiFlash3_extraction.jsonl
-CLEANED_RAW_OUT = "cleaned_raw_data_validation.jsonl"  # Standardized input for Script 2
-FAILED_LOG = "failed_validation_test.jsonl" # Only for critical structural failures
+INPUT_FILE = "raw_dataset.jsonl" 
+CLEANED_RAW_OUT = "cleaned_raw_dataset.jsonl"
+FAILED_LOG = "failed_schema_checker.jsonl"
 
 # --- SCHEMA DEFINITION ---
 RatioTriple = Annotated[List[str], Field(min_length=3, max_length=3)]
@@ -19,7 +18,7 @@ class BaseStrictModel(BaseModel):
 
 class TargetSchema(BaseStrictModel):
     name: str
-    form: str
+    form: Literal["powder", "thin film", "other"]
 
 class ReagentSchema(BaseStrictModel):
     name: str
@@ -63,17 +62,15 @@ def run_checker():
         "total": 0,
         "perfect": 0,
         "fixed": 0,
-        # (3) broken-out failure types
         "fail_missing_field": 0,
         "fail_bad_literal": 0,
         "fail_type_error": 0,
         "fail_malformed_json": 0,
-        # (4) semantic empty-field warnings (records still pass, just flagged)
         "warn_empty_doi": 0,
         "warn_empty_target_name": 0,
     }
 
-    extra_field_counts = Counter()  # (2) track which extra fields get stripped
+    extra_field_counts = Counter()  
     allowed_keys = set(RecipeSchema.model_fields.keys())
 
     with open(INPUT_FILE, "r", encoding="utf-8") as f, \
@@ -89,7 +86,7 @@ def run_checker():
             try:
                 obj = json.loads(line)
 
-                # (2) Record which unexpected top-level keys are present
+                # Record which unexpected top-level keys are present
                 extra_found = set(obj.keys()) - allowed_keys
                 for key in extra_found:
                     extra_field_counts[key] += 1
@@ -97,7 +94,7 @@ def run_checker():
                 # Validate + strip extra fields
                 valid_recipe = RecipeSchema.model_validate(obj)
 
-                # (4) Semantic empty-field warnings — record passes but is flagged
+                # Semantic empty-field warnings — record passes but is flagged
                 if not valid_recipe.doi.strip():
                     stats["warn_empty_doi"] += 1
                 if not valid_recipe.target.name.strip():
@@ -111,12 +108,12 @@ def run_checker():
                     stats["perfect"] += 1
 
             except json.JSONDecodeError as e:
-                # (3) Malformed JSON — can't even parse the line
+                # Malformed JSON 
                 stats["fail_malformed_json"] += 1
                 i_f.write(json.dumps({"doi": None, "error_type": "malformed_json", "error": str(e)}) + "\n")
 
             except ValidationError as e:
-                # (3) Pydantic failure — categorise by error type
+                # Pydantic failure categorised by error type
                 category = _classify_validation_error(e)
                 stats[f"fail_{category}"] += 1
                 i_f.write(json.dumps({
