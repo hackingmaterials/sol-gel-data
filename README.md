@@ -2,11 +2,11 @@
 
 A text-mined dataset of inorganic sol-gel synthesis recipes with phase purity outcomes, extracted from the scientific literature using Gemini 3.0 Flash.
 
-`sol_gel_dataset.jsonl` is the final post-processed dataset. See `tutorial_06_30_26.ipynb` for a walkthrough of the data structure and example analyses.
+`sol_gel_dataset.jsonl` is the final post-processed dataset. See `tutorial.ipynb` for a walkthrough of the data structure and example analyses.
 
 ## Raw Data
 
-The raw Gemini 3.0 Flash extraction before any post-processing is provided in `post-processing/raw_dataset.jsonl`. If you want to apply your own normalization scheme (different chemical parser, atmosphere labels, characterization method mappings, etc.), you can re-run the pipeline from this file. 
+The raw Gemini 3.0 Flash data extraction before any post-processing is provided in `post-processing/raw_dataset.jsonl`. If you want to apply your own normalization scheme (different chemical parser, atmosphere labels, characterization method mappings, etc.), you can re-run the pipeline from this file. 
 
 ## Post-Processing Pipeline
 
@@ -18,7 +18,7 @@ pip install -r post-processing/requirements.txt
 
 ### 2. Schema validation
 
-Validates each raw extraction against a Pydantic schema, strips unexpected fields, and logs failures by error type.
+Validates each raw extraction against a Pydantic schema, strips unexpected fields, and logs failures by error type. 
 
 ```bash
 cd post-processing
