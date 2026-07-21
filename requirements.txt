@@ -1,0 +1,13 @@
+# Dependencies for tutorial.ipynb
+# (The post-processing pipeline has its own requirements in post-processing/requirements.txt)
+
+numpy
+matplotlib
+plotly>=5.0
+pymatgen
+pymatviz>=0.18.0        # ptable_heatmap_splits was renamed from ptable_heatmap_splits_plotly in 0.18.0
+nbformat>=4.2.0         # required by plotly for mime-type rendering inside notebooks
+
+# Notebook runtime (to open/run tutorial.ipynb)
+jupyter
+ipykernel
