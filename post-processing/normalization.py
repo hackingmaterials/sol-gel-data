@@ -10,7 +10,7 @@ INPUT_FILE = "cleaned_raw_dataset.jsonl"
 OUTPUT_FILE = "sol_gel_dataset.jsonl"
 CMT_MANUAL_FILE = "cmt_manual.json"
 ATMO_MANUAL_FILE = "atmosphere_manual.json"
-REAGENT_MAPPING_FILE = "reagent_mapping.json"
+REAGENT_MAPPING_FILE = "reagent_mapping.json" # this file was built using pubchempy
 
 # --- text2chem Setup ---
 try:
