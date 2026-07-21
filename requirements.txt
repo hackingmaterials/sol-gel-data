@@ -5,8 +5,8 @@ numpy
 matplotlib
 plotly>=5.0
 pymatgen
-pymatviz>=0.18.0        # ptable_heatmap_splits was renamed from ptable_heatmap_splits_plotly in 0.18.0
-nbformat>=4.2.0         # required by plotly for mime-type rendering inside notebooks
+pymatviz>=0.18.0       
+nbformat>=4.2.0         
 
 # Notebook runtime (to open/run tutorial.ipynb)
 jupyter

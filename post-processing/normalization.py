@@ -103,20 +103,16 @@ def classify_atmosphere(raw):
 
 # --- UTILITIES ---
 def parse_numeric_range(raw_str):
-    # Text fields (raw_string, unit) use "" when empty; numeric fields
-    # (max_value, min_value) use null, since JSON has no NaN and a numeric
-    # column should not be polluted with empty strings.
+    # Text fields (raw_string, unit) use "" when empty
+    # Numeric fields (max_value, min_value) use null when empty
     if not raw_str or not isinstance(raw_str, str):
         return {"raw_string": raw_str if isinstance(raw_str, str) else "", "unit": "", "max_value": None, "min_value": None}
     clean_s = raw_str.lower().strip()
     nums = [float(n) for n in re.findall(r"[-+]?\d*\.\d+|\d+", clean_s)]
-    # A unit is only meaningful alongside a magnitude. If no number is parsed
-    # (e.g. "room temperature", "overnight", "three days"), report nothing and
-    # leave the raw string for downstream handling.
+    # If no number is parsed (e.g. "room temperature", "overnight", "three days"), report nothing and leave the raw string
     if not nums:
         return {"raw_string": raw_str, "unit": "", "max_value": None, "min_value": None}
-    # The unit must be the token immediately following a digit, not just any
-    # trailing word, so "80 °C then cooled" -> "°c" (not "cooled").
+
     unit_match = re.search(r'\d\s*([a-zA-Z°%]+)', clean_s)
     unit = unit_match.group(1) if unit_match else ""
     if unit:
