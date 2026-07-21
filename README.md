@@ -42,7 +42,7 @@ python schema_checker.py
 
 ### 3. Normalization
 
-Restructures the dataset and parses chemical entities  using text2chem and pubchempy (`reagent_mapping.json`). Depends on the custom entity mappings in `atmosphere_manual.json`,`cmt_manual.json`. Edit these files to customize atmosphere labels, characterization method names, or reagent lookups before running.
+Restructures the dataset and parses chemical entities  using text2chem. Depends on the custom entity mappings in `atmosphere_manual.json`,`cmt_manual.json`. Note that reagent mappings (`reagent_mapping.json`) using pubchempy. Edit these files to customize atmosphere labels, characterization method names, or reagent lookups before running.
 
 ```bash
 python normalization.py
