@@ -1,13 +1,22 @@
-# Dependencies for tutorial.ipynb
+# Dependencies for tutorial.ipynb, scripts/figures_tables.ipynb, and
+# validation/validation.ipynb.
 # (The post-processing pipeline has its own requirements in post-processing/requirements.txt)
 
+# Data handling and plotting
 numpy
+pandas>=1.0
 matplotlib
+seaborn>=0.12          # confusion-matrix heatmaps (Figures S1, S2)
 plotly>=5.0
-pymatgen
-pymatviz>=0.18.0       
-nbformat>=4.2.0         
+nbformat>=4.2.0        # required by plotly to render figures in a notebook
 
-# Notebook runtime (to open/run tutorial.ipynb)
+# Chemistry / materials
+pymatgen
+pymatviz>=0.18.0       # ptable_heatmap_splits (Figure 2) was added in 0.18.0
+
+# Evaluation metrics
+scikit-learn>=1.0      # confusion_matrix, classification_report (Tables 3-5, S3)
+
+# Notebook runtime (to open/run the notebooks)
 jupyter
 ipykernel
