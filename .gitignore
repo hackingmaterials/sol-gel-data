@@ -3,3 +3,9 @@ __pycache__/
 *.pyc
 .DS_Store
 *.jsonl
+
+!scripts/validation/classification_human.jsonl
+!scripts/validation/classification_LLM.jsonl
+!scripts/validation/validation_human.jsonl
+!scripts/validation/validation_LLM.jsonl
+!scripts/validation/validation_paper_level_metrics_human.jsonl
