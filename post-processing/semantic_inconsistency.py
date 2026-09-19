@@ -1,19 +1,24 @@
 import json
 from collections import Counter
+from pathlib import Path
+
 from tqdm import tqdm
 
 # --- CONFIGURATION ---
-# Runs on the normalized dataset, i.e. the output of normalization.py. The
-# checks below compare parsed chemistry (material_formula / composition), not
-# raw strings, so they cannot run inside schema_checker.py — that script sees
-# the dataset before text2chem parsing.
-INPUT_FILE = "sol_gel_dataset.jsonl"
-FLAGGED_LOG = "semantic_inconsistencies.jsonl"
+# Runs on the normalized dataset, i.e. the output of normalization.py. 
+#
+# Paths are resolved from this file, not from the working directory, so the
+# script runs from anywhere. The released dataset sits at the repository root;
+# if it is not there, the copy normalization.py writes next to this script is
+# used instead.
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parent
 
-# C, H, N and O are never treated as unsourced: they are the elements of
-# carbonates (BaCO3, SrCO3 ...) and of the organic residues left by the
-# chelating agents and alkoxides used in sol-gel synthesis, none of which need
-# a source in the target or in the metal precursors to be a plausible impurity.
+INPUT_FILE = ROOT / "sol_gel_dataset.jsonl"
+if not INPUT_FILE.exists():
+    INPUT_FILE = HERE / "sol_gel_dataset.jsonl"
+FLAGGED_LOG = HERE / "semantic_inconsistencies.jsonl"
+
 IGNORED_ELEMENTS = {"C", "H", "N", "O"}
 
 
@@ -111,17 +116,13 @@ def run_checker():
             for issue in issues:
                 stats[issue.split(":")[0]] += 1
 
-            protocol = record.get("protocol", {})
-            phase_purity = record.get("phase_purity", {})
-            out_f.write(json.dumps({
-                "doi": protocol.get("doi", ""),
-                "target": protocol.get("target", {}).get("material_string", ""),
-                "classification": phase_purity.get("classification", ""),
-                "impurity_phase": [
-                    imp.get("material_string", "") for imp in phase_purity.get("impurity_phase", [])
-                ],
-                "issues": issues,
-            }) + "\n")
+            # The whole flagged record is written out, with the issues that
+            # flagged it as the leading field. A DOI identifies a paper, not a
+            # record -- one paper usually contributes several records -- so a
+            # summary keyed on the DOI could not be matched back to the record
+            # it came from. Writing the record itself makes the log directly
+            # comparable to the entries of INPUT_FILE.
+            out_f.write(json.dumps({"issues": issues, **record}) + "\n")
 
     # --- Report ---
     def pct(n):

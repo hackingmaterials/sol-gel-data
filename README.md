@@ -14,6 +14,10 @@ pip install -r requirements.txt
 ```
 
 
+## Figures, Tables, and Validation
+
+`scripts/figures_tables.ipynb` regenerates every numbered figure and table in the manuscript and Supplementary Information, and `scripts/validation/` holds the validation labels the reported metrics are computed from. See `scripts/README.md`.
+
 ## Raw Data
 
 The raw Gemini 3.0 Flash data extraction before any post-processing is provided in `post-processing/raw_dataset.jsonl`. If you want to apply your own normalization scheme (different chemical parser, atmosphere labels, characterization method mappings, etc.), you can re-run the pipeline from this file. Also, the raw outputs for the paper filtration step are provided in `paper_filtration.jsonl`
